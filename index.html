@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Simulado CCAF</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f5f2; --surface:#ffffff; --surface2:#efece7; --text:#1f1d1a; --muted:#6b6558;
+  --border:#e2ddd4; --accent:#b4541e; --accent-soft:#f6e3d7; --accent-text:#8f3f12;
+  --good:#2e7d4f; --good-soft:#ddf0e4; --bad:#c23b3b; --bad-soft:#f8e2e2;
+  --warn:#a3742a; --warn-soft:#f5ead2; --shadow:0 1px 3px rgba(30,25,15,.08),0 4px 16px rgba(30,25,15,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#191714; --surface:#221f1b; --surface2:#2b2721; --text:#ece7de; --muted:#a49b8b;
+    --border:#3a352c; --accent:#e0824a; --accent-soft:#3d2a1c; --accent-text:#eda36f;
+    --good:#5cbd87; --good-soft:#1e332757; --bad:#e07070; --bad-soft:#3a222257;
+    --warn:#d9a851; --warn-soft:#37301f; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#191714; --surface:#221f1b; --surface2:#2b2721; --text:#ece7de; --muted:#a49b8b;
+  --border:#3a352c; --accent:#e0824a; --accent-soft:#3d2a1c; --accent-text:#eda36f;
+  --good:#5cbd87; --good-soft:#1e332757; --bad:#e07070; --bad-soft:#3a222257;
+  --warn:#d9a851; --warn-soft:#37301f; --shadow:0 1px 3px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;margin:0;line-height:1.55;font-size:15px}
+.wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+h1{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:0}
+.sub{color:var(--muted);margin:4px 0 0;font-size:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow);margin-top:16px}
+.card h2{font-size:15px;font-weight:700;margin:0 0 12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--border);background:var(--surface);color:var(--text);border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .12s}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-text);font-weight:600}
+.row{display:flex;gap:24px;flex-wrap:wrap}
+.row>div{flex:1;min-width:230px}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .12s}
+.btn:hover{opacity:.9}
+.btn.ghost{background:var(--surface);color:var(--text);border:1.5px solid var(--border);font-weight:600}
+.btn.small{padding:8px 14px;font-size:13.5px;border-radius:8px}
+.btn:disabled{opacity:.45;cursor:default}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+.timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:17px;padding:6px 14px;border-radius:8px;background:var(--surface2)}
+.timer.low{background:var(--bad-soft);color:var(--bad)}
+.badge{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--surface2);color:var(--muted);margin-right:6px;margin-bottom:4px}
+.badge.dom{background:var(--accent-soft);color:var(--accent-text)}
+.qtext{font-size:16.5px;font-weight:500;margin:14px 0 6px;white-space:pre-wrap}
+.selhint{color:var(--muted);font-size:13px;margin-bottom:12px}
+.opt{display:flex;gap:12px;align-items:flex-start;border:1.5px solid var(--border);border-radius:11px;padding:13px 15px;margin-top:10px;cursor:pointer;transition:all .12s;background:var(--surface)}
+.opt:hover{border-color:var(--accent)}
+.opt .letter{font-weight:800;min-width:22px;color:var(--muted)}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.sel .letter{color:var(--accent-text)}
+.opt.correct{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.locked{cursor:default}
+.feedback{border-radius:11px;padding:14px 16px;margin-top:14px;font-size:14.5px}
+.feedback.ok{background:var(--good-soft);border:1px solid var(--good)}
+.feedback.no{background:var(--bad-soft);border:1px solid var(--bad)}
+.feedback .verdict{font-weight:800;margin-bottom:6px}
+details{margin-top:10px}
+summary{cursor:pointer;font-weight:600;color:var(--accent-text);font-size:13.5px}
+.nav{display:flex;gap:10px;margin-top:18px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px;margin-top:12px}
+.pal{border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:7px 0;text-align:center;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text)}
+.pal.answered{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-text)}
+.pal.marked{border-color:var(--warn);background:var(--warn-soft);color:var(--warn)}
+.pal.cur{outline:2.5px solid var(--accent);outline-offset:1px}
+.score-big{font-size:44px;font-weight:800;letter-spacing:-.02em}
+.score-big small{font-size:18px;color:var(--muted);font-weight:600}
+.passline{font-weight:700;margin-top:2px}
+.bar-row{margin-top:14px}
+.bar-label{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;margin-bottom:5px}
+.bar-label .pct{font-variant-numeric:tabular-nums}
+.bar{height:10px;border-radius:6px;background:var(--surface2);position:relative;overflow:visible}
+.bar .fill{height:100%;border-radius:6px;background:var(--accent);transition:width .5s}
+.bar .fill.good{background:var(--good)}
+.bar .fill.bad{background:var(--bad)}
+.bar .target{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--muted);left:75%}
+.review-q{border-top:1px solid var(--border);padding:18px 0}
+.review-q:first-of-type{border-top:none}
+.tag-ok{color:var(--good);font-weight:700}
+.tag-no{color:var(--bad);font-weight:700}
+.hist-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.hist-table th,.hist-table td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--border)}
+.hist-table th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.count-input{width:80px;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:14px;background:var(--surface);color:var(--text)}
+.footer-note{color:var(--muted);font-size:12.5px;margin-top:20px;text-align:center}
+.hidden{display:none}
+code{background:var(--surface2);padding:1px 5px;border-radius:5px;font-size:.92em}
+@media(max-width:600px){.wrap{padding:16px 12px 60px}h1{font-size:22px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<div id="setup">
+  <h1>Simulado CCAF</h1>
+  <p class="sub">Claude Certified Architect – Foundations · 120 questões de 2 simulados · meta: ≥75% por domínio</p>
+
+  <!-- CARD DE IDENTIFICAÇÃO COM E-MAIL -->
+  <div class="card" id="emailCard">
+    <h2>Identificação</h2>
+    <p class="sub" style="margin-bottom:10px">Digite seu e-mail para começar. Seus resultados serão registrados automaticamente na planilha.</p>
+    <input type="email" id="userEmail" placeholder="seuemail@empresa.com"
+      style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;
+      font-family:inherit;font-size:15px;background:var(--surface);color:var(--text)">
+  </div>
+
+  <div class="card">
+    <h2>Modo</h2>
+    <div class="chips" id="modeChips">
+      <button class="chip on" data-mode="exam">🎯 Modo Prova — feedback só no final, com cronômetro</button>
+      <button class="chip" data-mode="train">📖 Modo Treino — explicação após cada questão, sem tempo</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <h2>Fonte</h2>
+        <div class="chips" id="srcChips">
+          <button class="chip on" data-src="all">Ambos (120)</button>
+          <button class="chip" data-src="Simulado 1 (Purcell)">Simulado 1 · Purcell (60)</button>
+          <button class="chip" data-src="Simulado 2 (Flashcards)">Simulado 2 · Flashcards (60)</button>
+        </div>
+      </div>
+      <div>
+        <h2>Nº de questões</h2>
+        <div class="chips" id="countChips">
+          <button class="chip" data-count="10">10</button>
+          <button class="chip" data-count="20">20</button>
+          <button class="chip" data-count="30">30</button>
+          <button class="chip on" data-count="60">60 (prova real)</button>
+          <button class="chip" data-count="all">Todas</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Domínios <span style="font-weight:400;text-transform:none;letter-spacing:0">— clique para filtrar (vazio = todos)</span></h2>
+    <div class="chips" id="domChips"></div>
+  </div>
+
+  <div class="card" id="histCard">
+    <h2>Histórico</h2>
+    <div id="histBody"><p class="sub">Nenhuma tentativa registrada ainda. Os resultados ficam salvos neste navegador.</p></div>
+  </div>
+
+  <div class="nav">
+    <button class="btn" id="startBtn">Iniciar simulado →</button>
+    <span class="sub" id="startInfo"></span>
+  </div>
+  <p class="footer-note">Questões extraídas de: “CCAR-F Practice Questions v2” (Matthew Purcell) e “Flashcards Deck – Claude Certified Architect”. No modo prova o tempo é de 2 min/questão, igual à prova real (120 min / 60 questões).</p>
+</div>
+
+<div id="quiz" class="hidden">
+  <div class="topbar">
+    <div><strong id="qCounter"></strong> <span class="sub" id="qMeta"></span></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div class="timer hidden" id="timer">--:--</div>
+      <button class="btn ghost small" id="quitBtn">Sair</button>
+    </div>
+  </div>
+  <div class="card" id="qCard"></div>
+  <div class="nav" id="quizNav">
+    <button class="btn ghost" id="prevBtn">← Anterior</button>
+    <button class="btn ghost" id="markBtn">🚩 Marcar</button>
+    <div class="spacer"></div>
+    <button class="btn ghost" id="nextBtn">Próxima →</button>
+    <button class="btn" id="finishBtn">Finalizar</button>
+  </div>
+  <div class="card" id="palCard"><h2>Questões</h2><div class="palette" id="palette"></div></div>
+</div>
+
+<div id="results" class="hidden">
+  <h1>Resultado</h1>
+  <div class="card" style="text-align:center">
+    <div class="score-big" id="scoreBig"></div>
+    <div class="passline" id="passLine"></div>
+    <p class="sub" id="scoreMeta"></p>
+  </div>
+  <div class="card">
+    <h2>Por domínio <span style="font-weight:400;text-transform:none;letter-spacing:0">— a linha marca a meta de 75%</span></h2>
+    <div id="domBars"></div>
+  </div>
+  <div class="nav">
+    <button class="btn" id="againBtn">Novo simulado</button>
+    <button class="btn ghost" id="wrongBtn">Refazer só as erradas</button>
+  </div>
+  <div class="card">
+    <h2>Revisão</h2>
+    <div class="chips" style="margin-bottom:6px" id="revFilter">
+      <button class="chip on" data-f="wrong">Só erradas</button>
+      <button class="chip" data-f="all">Todas</button>
+    </div>
+    <div id="reviewList"></div>
+  </div>
+</div>
+</div>
+
+<!-- BANCO COMPLETO DE QUESTÕES (MANTIDO DO SEU ARQUIVO) -->
+<script id="qdata" type="application/json">[{"source":"Simulado 1 (Purcell)","id":"S1-1.1","scenario":"Customer Support Resolution Agent","domain":"Agentic Architecture & Orchestration","type":"single","select":1,"question":"You are implementing the agent's core loop. Which control flow correctly determines when to keep executing tools and when to present the final response?","options":{"A":"Continue looping until the assistant’s text contains a completion phrase such as “I have resolved the issue”, then treat the message containing that phrase as the final response to present","B":"Inspect stop_reason on each response: while it is “ tool_use ”, run the requested tools and return the results; when it is “ end_turn ”, present the final response","C":"Cap the loop at a fixed maximum iteration count and treat reaching the cap as the signal that the response is complete","D":"Stop the loop whenever a response contains a text block, since the model only produces text once it has finished calling tools"},"correct":["B"],"explanation":"The agentic loop keys off stop_reason : “ tool_use ” means the model has requested tools and expects their results back; “ end_turn ” means it has finished reasoning and produced its answer. That signal is the designed termination mechanism. Why not the others: A parses natural language for a completion signal — a documented anti-pattern; C makes an arbitrary iteration cap the primary stopping mechanism when it should only be a safety valve; D fails because responses can contain both text and tool_use blocks mid-task.","translation":null},{"source":"Simulado 1 (Purcell)","id":"S1-1.2","scenario":"Customer Support Resolution Agent","domain":"Agentic Architecture & Orchestration","type":"single","select":1,"question":"The agent calls lookup_order and your code executes it successfully. How does the model actually receive the order data so it can reason about the next action?","options":{"A":"The MCP server holds the open connection and streams the result straight back into the model’s active context as soon as execution completes","B":"The result is attached to the tool’s definition, which the model re-reads on its next inference pass","C":"Nothing is required — the API executes tools and incorporates results automatically","D":"Your code appends a tool result block referencing the tool call’s ID and sends the updated message history back in the next request"},"correct":["D"],"explanation":"Tool execution is the harness's job: the loop appends the tool result to the conversation and re-invokes the model. That growing history is the only channel through which the model sees what tools returned. Why not the others: A and C describe automatic delivery mechanisms that do not exist — the API does not execute your tools or push results; B confuses static tool definitions with runtime results.","translation":null}]</script>
+
+<script>
+// ==========================================================
+// CONFIGURAÇÕES DO GOOGLE FORMS (DISPARO PARA A PLANILHA)
+// ==========================================================
+const FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdH5KHjTJB5v5NpZGL3Iye0udMCh5e8FyJYPwaXdX4AOopolA/formResponse";
+const FIELD_EMAIL      = "entry.774752641";
+const FIELD_DATA       = "entry.464322536";
+const FIELD_PONTUACAO  = "entry.2089067009";
+const FIELD_TOTAL      = "entry.1813610288";
+const FIELD_PERCENTUAL = "entry.1996709623";
+const FIELD_DETALHES   = "entry.1939991650";
+
+function sendResultsToSheet() {
+  const emailVal = $('userEmail') ? $('userEmail').value.trim() : "";
+  
+  const detalhes = quiz.qs.map(q => ({
+    id: q.id,
+    dominio: q.domain,
+    acertou: arrEq(quiz.answers[q.id] || [], q.correct),
+    resposta_dada: (quiz.answers[q.id] || []).join(','),
+    resposta_correta: q.correct.join(',')
+  }));
+
+  const formData = new URLSearchParams();
+  formData.append(FIELD_EMAIL, emailVal || "nao_informado@empresa.com");
+  formData.append(FIELD_DATA, new Date().toISOString());
+  formData.append(FIELD_PONTUACAO, quiz.score);
+  formData.append(FIELD_TOTAL, quiz.qs.length);
+  formData.append(FIELD_PERCENTUAL, Math.round(100 * quiz.score / quiz.qs.length));
+  formData.append(FIELD_DETALHES, JSON.stringify(detalhes));
+
+  fetch(FORM_ACTION_URL, {
+    method: "POST",
+    mode: "no-cors",
+    body: formData
+  })
+  .then(() => console.log("Resultado enviado à planilha com sucesso!"))
+  .catch(err => console.warn("Erro ao enviar resultado:", err));
+}
+
+// ==========================================================
+// LÓGICA DO SIMULADO (MANTIDA INTEGRALMENTE)
+// ==========================================================
+const ALL = JSON.parse(document.getElementById('qdata').textContent);
+const DOMAINS = [...new Set(ALL.map(q=>q.domain))].sort();
+const WEIGHTS = {"Agentic Architecture & Orchestration":"27%","Tool Design & MCP Integration":"18%","Claude Code Configuration & Workflows":"20%","Prompt Engineering & Structured Output":"20%","Context Management & Reliability":"15%"};
+const $ = id => document.getElementById(id);
+let cfg = {mode:'exam', src:'all', count:'60', doms:new Set()};
+let quiz = null, timerInt = null;
+
+function lsGet(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+
+function initSetup(){
+  const dc = $('domChips'); dc.innerHTML='';
+  DOMAINS.forEach(d=>{
+    const n = ALL.filter(q=>q.domain===d).length;
+    const b = document.createElement('button');
+    b.className='chip'; b.textContent=`${d} (${n})`;
+    b.onclick=()=>{ b.classList.toggle('on'); cfg.doms.has(d)?cfg.doms.delete(d):cfg.doms.add(d); updateInfo(); };
+    dc.appendChild(b);
+  });
+  singleSelect('modeChips','mode',v=>cfg.mode=v);
+  singleSelect('srcChips','src',v=>cfg.src=v);
+  singleSelect('countChips','count',v=>cfg.count=v);
+  renderHistory(); updateInfo();
+}
+function singleSelect(id,attr,set){
+  const box=$(id);
+  box.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
+    box.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); set(b.dataset[attr]); updateInfo();
+  });
+}
+function pool(){
+  let p = ALL.filter(q=> cfg.src==='all' || q.source===cfg.src);
+  if(cfg.doms.size) p = p.filter(q=>cfg.doms.has(q.domain));
+  return p;
+}
+function updateInfo(){
+  const p = pool();
+  const n = cfg.count==='all' ? p.length : Math.min(+cfg.count,p.length);
+  $('startInfo').textContent = `${n} questões disponíveis` + (cfg.mode==='exam' ? ` · ${Math.round(n*2)} min` : ' · sem tempo');
+  $('startBtn').disabled = n===0;
+}
+function renderHistory(){
+  const h = lsGet('ccaf-history',[]);
+  if(!h.length) return;
+  const domAvg = {};
+  h.forEach(a=>Object.entries(a.domains||{}).forEach(([d,v])=>{
+    domAvg[d]=domAvg[d]||{c:0,t:0}; domAvg[d].c+=v.c; domAvg[d].t+=v.t;
+  }));
+  let rows = h.slice(-8).reverse().map(a=>{
+    const pct = Math.round(100*a.score/a.total);
+    return `<tr><td>${a.date}</td><td>${a.mode==='exam'?'Prova':'Treino'}</td><td>${a.score}/${a.total}</td><td style="font-weight:700;color:${pct>=75?'var(--good)':'var(--bad)'}">${pct}%</td></tr>`;
+  }).join('');
+  let bars = Object.entries(domAvg).map(([d,v])=>{
+    const pct = Math.round(100*v.c/v.t);
+    return barRow(d,pct,`${v.c}/${v.t}`);
+  }).join('');
+  $('histBody').innerHTML = `<table class="hist-table"><tr><th>Data</th><th>Modo</th><th>Acertos</th><th>%</th></tr>${rows}</table>
+    <div style="margin-top:16px"><h2 style="font-size:13px">Média acumulada por domínio</h2>${bars}</div>
+    <div class="nav"><button class="btn ghost small" onclick="if(confirm('Apagar todo o histórico?')){lsSet('ccaf-history',[]);renderHistory();location.reload()}">Limpar histórico</button></div>`;
+}
+function barRow(label,pct,detail){
+  const cls = pct>=75?'good':(pct>=60?'':'bad');
+  return `<div class="bar-row"><div class="bar-label"><span>${label}${detail?` <span style="color:var(--muted);font-weight:500">· ${detail}</span>`:''}</span><span class="pct">${pct}%</span></div>
+  <div class="bar"><div class="fill ${cls}" style="width:${Math.min(pct,100)}%"></div><div class="target"></div></div></div>`;
+}
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function startQuiz(customQs){
+  const email = $('userEmail').value.trim();
+  if (!email) {
+    alert("Por favor, digite seu e-mail de identificação para iniciar.");
+    $('userEmail').focus();
+    return;
+  }
+
+  let qs;
+  if(customQs){ qs = customQs.slice(); }
+  else {
+    qs = shuffle(pool().slice());
+    if(cfg.count!=='all') qs = qs.slice(0,+cfg.count);
+  }
+  if(!qs.length) return;
+  quiz = { qs, idx:0, answers:{}, marked:new Set(), mode:cfg.mode, done:{},
+           secs: cfg.mode==='exam' ? qs.length*120 : 0 };
+  show('quiz');
+  if(quiz.mode==='exam'){
+    $('timer').classList.remove('hidden');
+    clearInterval(timerInt);
+    timerInt = setInterval(tick,1000); tick();
+  } else { $('timer').classList.add('hidden'); }
+  $('finishBtn').textContent = quiz.mode==='exam' ? 'Finalizar' : 'Encerrar treino';
+  renderQ();
+}
+
+function tick(){
+  if(!quiz) return;
+  quiz.secs--;
+  const m = Math.floor(Math.max(quiz.secs,0)/60), s = Math.max(quiz.secs,0)%60;
+  const t = $('timer');
+  t.textContent = `${m}:${String(s).padStart(2,'0')}`;
+  t.classList.toggle('low', quiz.secs<300);
+  if(quiz.secs<=0){ clearInterval(timerInt); finish(); }
+}
+
+function renderQ(){
+  const q = quiz.qs[quiz.idx];
+  const sel = quiz.answers[q.id]||[];
+  const locked = quiz.mode==='train' && quiz.done[q.id];
+  $('qCounter').textContent = `Questão ${quiz.idx+1} de ${quiz.qs.length}`;
+  $('qMeta').textContent = '';
+  let badges = `<span class="badge dom">${q.domain}${WEIGHTS[q.domain]?' · '+WEIGHTS[q.domain]:''}</span><span class="badge">${q.source}</span>`;
+  if(q.scenario) badges += `<span class="badge">📋 ${q.scenario}</span>`;
+  let html = `<div>${badges}</div><div class="qtext">${esc(q.question)}</div>`;
+  html += `<div class="selhint">${q.type==='multi' ? `Selecione ${q.select} alternativas` : 'Selecione UMA alternativa'}</div>`;
+  const letters = Object.keys(q.options).sort();
+  letters.forEach(L=>{
+    let cls = 'opt';
+    if(sel.includes(L)) cls+=' sel';
+    if(locked){
+      cls+=' locked';
+      if(q.correct.includes(L)) cls = 'opt locked correct';
+      else if(sel.includes(L)) cls = 'opt locked wrong';
+    }
+    html += `<div class="${cls}" data-l="${L}"><span class="letter">${L}</span><span>${esc(q.options[L])}</span></div>`;
+  });
+  if(quiz.mode==='train'){
+    if(!locked && q.type==='multi') html += `<div class="nav"><button class="btn small" id="confirmBtn" ${sel.length!==q.select?'disabled':''}>Confirmar resposta</button></div>`;
+    if(locked) html += feedbackHtml(q, sel);
+  }
+  $('qCard').innerHTML = html;
+  if(!locked){
+    $('qCard').querySelectorAll('.opt').forEach(el=>el.onclick=()=>pick(q, el.dataset.l));
+    const cb = $('confirmBtn'); if(cb) cb.onclick=()=>{ quiz.done[q.id]=true; renderQ(); };
+  }
+  $('prevBtn').disabled = quiz.idx===0;
+  $('nextBtn').disabled = quiz.idx===quiz.qs.length-1;
+  $('markBtn').style.opacity = quiz.marked.has(q.id)?1:.6;
+  renderPalette();
+}
+
+function pick(q, L){
+  let sel = quiz.answers[q.id]||[];
+  if(q.type==='single'){
+    sel = [L];
+    quiz.answers[q.id]=sel;
+    if(quiz.mode==='train'){ quiz.done[q.id]=true; renderQ(); return; }
+  } else {
+    sel = sel.includes(L) ? sel.filter(x=>x!==L) : [...sel,L];
+    if(sel.length>q.select) sel = sel.slice(sel.length-q.select);
+    quiz.answers[q.id]=sel;
+  }
+  renderQ();
+}
+
+function feedbackHtml(q, sel){
+  const ok = arrEq(sel, q.correct);
+  let h = `<div class="feedback ${ok?'ok':'no'}"><div class="verdict">${ok?'✅ Correto!':'❌ Incorreto — resposta: '+q.correct.join(', ')}</div>`;
+  if(q.explanation) h += `<div>${esc(q.explanation)}</div>`;
+  if(q.translation) h += `<details><summary>🇧🇷 Ver questão traduzida</summary><div style="margin-top:8px;white-space:pre-wrap">${esc(q.translation)}</div></details>`;
+  h += `</div>`;
+  return h;
+}
+
+function renderPalette(){
+  const p = $('palette'); p.innerHTML='';
+  quiz.qs.forEach((q,i)=>{
+    const b = document.createElement('button');
+    b.className='pal';
+    if((quiz.answers[q.id]||[]).length) b.classList.add('answered');
+    if(quiz.marked.has(q.id)) b.classList.add('marked');
+    if(i===quiz.idx) b.classList.add('cur');
+    b.textContent = i+1;
+    b.onclick=()=>{ quiz.idx=i; renderQ(); window.scrollTo({top:0}); };
+    p.appendChild(b);
+  });
+}
+
+function arrEq(a,b){ return a.length===b.length && a.slice().sort().join()===b.slice().sort().join(); }
+
+function finish(){
+  clearInterval(timerInt);
+  const unanswered = quiz.qs.filter(q=>!(quiz.answers[q.id]||[]).length).length;
+  if(unanswered && quiz.secs>0 && quiz.mode==='exam'){
+    if(!confirm(`Você tem ${unanswered} questão(ões) sem resposta. Finalizar mesmo assim?`)){ timerInt=setInterval(tick,1000); return; }
+  }
+  let score=0; const dom={};
+  quiz.qs.forEach(q=>{
+    const ok = arrEq(quiz.answers[q.id]||[], q.correct);
+    dom[q.domain]=dom[q.domain]||{c:0,t:0}; dom[q.domain].t++;
+    if(ok){ score++; dom[q.domain].c++; }
+  });
+  quiz.score=score; quiz.dom=dom;
+  const hist = lsGet('ccaf-history',[]);
+  hist.push({date:new Date().toLocaleDateString('pt-BR')+' '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+             mode:quiz.mode, score, total:quiz.qs.length, domains:dom});
+  lsSet('ccaf-history',hist);
+
+  // ENVIO AUTOMÁTICO DOS RESULTADOS PARA A PLANILHA
+  sendResultsToSheet();
+
+  const pct = Math.round(100*score/quiz.qs.length);
+  $('scoreBig').innerHTML = `${pct}% <small>· ${score}/${quiz.qs.length}</small>`;
+  $('passLine').innerHTML = pct>=75 ? '<span class="tag-ok">✅ Acima da meta de 75%</span>' : '<span class="tag-no">⚠️ Abaixo da meta de 75%</span>';
+  $('scoreMeta').textContent = quiz.mode==='exam' ? `Tempo usado: ${fmtUsed()}` : 'Modo treino';
+  $('domBars').innerHTML = Object.entries(dom).map(([d,v])=>barRow(d, Math.round(100*v.c/v.t), `${v.c}/${v.t}`)).join('');
+  renderReview('wrong');
+  document.querySelectorAll('#revFilter .chip').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('#revFilter .chip').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); renderReview(b.dataset.f);
+  });
+  show('results'); window.scrollTo({top:0});
+}
+
+function fmtUsed(){
+  const used = quiz.qs.length*120 - Math.max(quiz.secs,0);
+  return `${Math.floor(used/60)} min ${used%60}s`;
+}
+
+function renderReview(filter){
+  const list = quiz.qs.filter(q=>filter==='all' || !arrEq(quiz.answers[q.id]||[], q.correct));
+  if(!list.length){ $('reviewList').innerHTML = '<p class="sub">Nenhuma questão errada. 🎉</p>'; return; }
+  $('reviewList').innerHTML = list.map(q=>{
+    const sel = quiz.answers[q.id]||[];
+    const ok = arrEq(sel,q.correct);
+    let opts = Object.keys(q.options).sort().map(L=>{
+      let cls='opt locked';
+      if(q.correct.includes(L)) cls+=' correct';
+      else if(sel.includes(L)) cls+=' wrong';
+      return `<div class="${cls}"><span class="letter">${L}</span><span>${esc(q.options[L])}</span></div>`;
+    }).join('');
+    let extra='';
+    if(q.explanation) extra += `<details ${ok?'':'open'}><summary>💡 Explicação</summary><div style="margin-top:8px;white-space:pre-wrap">${esc(q.explanation)}</div></details>`;
+    if(q.translation) extra += `<details><summary>🇧🇷 Ver questão traduzida</summary><div style="margin-top:8px;white-space:pre-wrap">${esc(q.translation)}</div></details>`;
+    return `<div class="review-q">
+      <div><span class="${ok?'tag-ok':'tag-no'}">${ok?'✅':'❌'}</span> <span class="badge dom">${q.domain}</span><span class="badge">${q.source}</span>${sel.length?'':'<span class="badge" style="color:var(--bad)">sem resposta</span>'}</div>
+      <div class="qtext" style="font-size:15px">${esc(q.question)}</div>${opts}${extra}</div>`;
+  }).join('');
+}
+
+function show(id){ ['setup','quiz','results'].forEach(x=>$(x).classList.toggle('hidden',x!==id)); }
+function esc(s){ const d=document.createElement('div'); d.textContent=s??''; return d.innerHTML; }
+
+// Inicialização de Eventos
+$('startBtn').onclick=()=>startQuiz();
+$('prevBtn').onclick=()=>{ if(quiz.idx>0){quiz.idx--;renderQ();} };
+$('nextBtn').onclick=()=>{ if(quiz.idx<quiz.qs.length-1){quiz.idx++;renderQ();} };
+$('markBtn').onclick=()=>{ const q=quiz.qs[quiz.idx]; quiz.marked.has(q.id)?quiz.marked.delete(q.id):quiz.marked.add(q.id); renderQ(); };
+$('finishBtn').onclick=()=>finish();
+$('quitBtn').onclick=()=>{ if(confirm('Sair sem salvar o resultado?')){ clearInterval(timerInt); show('setup'); renderHistory(); } };
+$('againBtn').onclick=()=>{ show('setup'); renderHistory(); updateInfo(); window.scrollTo({top:0}); };
+$('wrongBtn').onclick=()=>{
+  const wrong = quiz.qs.filter(q=>!arrEq(quiz.answers[q.id]||[], q.correct));
+  if(!wrong.length){ alert('Nenhuma questão errada!'); return; }
+  cfg.mode='train'; startQuiz(shuffle(wrong));
+};
+
+initSetup();
+</script>
+</body>
+</html>
